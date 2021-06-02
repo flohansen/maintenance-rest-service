@@ -10,19 +10,22 @@ import (
 )
 
 func main() {
+	// Initialize the database object using a configuration file.
 	dbConfig, _ := config.ReadDatabaseConfig("./database.json")
 	db, err := sql.Open("mysql", dbConfig.DataSourceName())
+
 	if err != nil {
 		panic(err.Error())
 	}
 
 	defer db.Close()
 
+	// Create new router and controllers for handling routing.
 	r := httprouter.New()
-
 	uc := controllers.NewUserController()
 	mc := controllers.NewMasterController(db)
 
+	// Define the routes of the REST service.
 	r.GET("/user/:id", uc.GetUser)
 
 	r.GET("/masters", mc.GetMasters)
@@ -32,5 +35,6 @@ func main() {
 	r.PUT("/masters/:id", mc.UpdateMaster)
 	r.DELETE("/masters/:id", mc.DeleteMaster)
 
+	// Start listening to clients.
 	http.ListenAndServe("localhost:3000", r)
 }
