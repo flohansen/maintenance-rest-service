@@ -24,8 +24,13 @@ func main() {
 	mc := controllers.NewMasterController(db)
 
 	r.GET("/user/:id", uc.GetUser)
-	r.GET("/master/:id", mc.GetMaster)
-	r.POST("/master", mc.CreateMaster)
+
+	r.GET("/masters", mc.GetMasters)
+	r.POST("/masters", mc.CreateMaster)
+
+	r.GET("/masters/:id", mc.GetMaster)
+	r.PUT("/masters/:id", mc.UpdateMaster)
+	r.DELETE("/masters/:id", mc.DeleteMaster)
 
 	http.ListenAndServe("localhost:3000", r)
 }

@@ -23,6 +23,40 @@ func NewMasterController(db *sql.DB) *MasterController {
 	}
 }
 
+func (mc MasterController) GetMasters(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	res := models.JsonResponse{}
+
+	var masters []models.Master
+
+	query, err := mc.Db.Query("SELECT id, name, host, port FROM masters")
+	defer query.Close()
+
+	if err != nil {
+		res.Code = 400
+		res.Content = "Could not find masters"
+		res.Send(w)
+		return
+	}
+
+	for query.Next() {
+		var master models.Master
+		err := query.Scan(&master.Id, &master.Name, &master.Host, &master.Port)
+
+		if err != nil {
+			res.Code = 400
+			res.Content = "Internal error"
+			res.Send(w)
+			return
+		}
+
+		masters = append(masters, master)
+	}
+
+	res.Code = 200
+	res.Content = masters
+	res.Send(w)
+}
+
 func (mc MasterController) GetMaster(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	res := models.JsonResponse{}
 	master := models.Master{}
@@ -37,24 +71,27 @@ func (mc MasterController) GetMaster(w http.ResponseWriter, r *http.Request, p h
 	if err != nil {
 		res.Code = 400
 		res.Content = fmt.Sprintf("Could not find master with id `%s`", p.ByName("id"))
-	} else {
-		res.Code = 200
-		res.Content = master
+		res.Send(w)
+		return
 	}
 
-	rj, _ := json.Marshal(res)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(res.Code)
-	fmt.Fprintf(w, "%s", rj)
+	res.Code = 200
+	res.Content = master
+	res.Send(w)
 }
 
 func (mc MasterController) CreateMaster(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	res := models.JsonResponse{}
 	decoder := json.NewDecoder(r.Body)
 
 	var m models.Master
 	err := decoder.Decode(&m)
+
 	if err != nil {
-		panic(err)
+		res.Code = 400
+		res.Content = "Could not parse json body"
+		res.Send(w)
+		return
 	}
 
 	_, err = mc.Db.Query(
@@ -63,9 +100,64 @@ func (mc MasterController) CreateMaster(w http.ResponseWriter, r *http.Request, 
 	)
 
 	if err != nil {
-		panic(err.Error())
+		res.Code = 400
+		res.Content = "Could not create new master. Please check if the name is unique."
+		res.Send(w)
+		return
 	}
 
-	w.WriteHeader(200)
-	fmt.Fprintf(w, "Success")
+	res.Code = 200
+	res.Content = "Success"
+	res.Send(w)
+}
+
+func (mc MasterController) UpdateMaster(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	res := models.JsonResponse{}
+	decoder := json.NewDecoder(r.Body)
+
+	var m models.Master
+	err := decoder.Decode(&m)
+
+	if err != nil {
+		res.Code = 400
+		res.Content = "Could not parse json body"
+		res.Send(w)
+		return
+	}
+
+	_, err = mc.Db.Query(
+		"UPDATE masters SET name = ?, host = ?, port = ? WHERE id = ?",
+		m.Name, m.Host, m.Port, p.ByName("id"),
+	)
+
+	if err != nil {
+		res.Code = 400
+		res.Content = "Could not update master"
+		res.Send(w)
+		return
+	}
+
+	res.Code = 200
+	res.Content = "Success"
+	res.Send(w)
+}
+
+func (mc MasterController) DeleteMaster(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	res := models.JsonResponse{}
+
+	_, err := mc.Db.Query(
+		"DELETE FROM masters WHERE id = ?",
+		p.ByName("id"),
+	)
+
+	if err != nil {
+		res.Code = 400
+		res.Content = fmt.Sprintf("Could not delete master with id `%s`", p.ByName("id"))
+		res.Send(w)
+		return
+	}
+
+	res.Code = 200
+	res.Content = "Success"
+	res.Send(w)
 }
