@@ -17,17 +17,19 @@ type (
 	}
 )
 
+// Creates a new master controller, which handles interaction with the database.
 func NewMasterController(db *sql.DB) *MasterController {
 	return &MasterController{
 		Db: db,
 	}
 }
 
+// Requests all masters stored in the database.
 func (mc MasterController) GetMasters(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	res := models.JsonResponse{}
-
 	var masters []models.Master
 
+	// Send the select query to the database to fetch stored master endpoints.
 	query, err := mc.Db.Query("SELECT id, name, host, port FROM masters")
 	defer query.Close()
 
@@ -38,7 +40,9 @@ func (mc MasterController) GetMasters(w http.ResponseWriter, r *http.Request, p 
 		return
 	}
 
+	// Fill the list of masters by iterating over all requested rows.
 	for query.Next() {
+		// Create and fill a new master object.
 		var master models.Master
 		err := query.Scan(&master.Id, &master.Name, &master.Host, &master.Port)
 
@@ -49,18 +53,22 @@ func (mc MasterController) GetMasters(w http.ResponseWriter, r *http.Request, p 
 			return
 		}
 
+		// Append the object to the array.
 		masters = append(masters, master)
 	}
 
+	// Everything was successfull.
 	res.Code = 200
 	res.Content = masters
 	res.Send(w)
 }
 
+// Requests a specific master identified by an id.
 func (mc MasterController) GetMaster(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	res := models.JsonResponse{}
 	master := models.Master{}
 
+	// Request the master endpoint using the given id from the database.
 	err := mc.Db.QueryRow(
 		"SELECT id, name, host, port FROM masters WHERE id = ?",
 		p.ByName("id"),
@@ -75,15 +83,18 @@ func (mc MasterController) GetMaster(w http.ResponseWriter, r *http.Request, p h
 		return
 	}
 
+	// Everything went fine.
 	res.Code = 200
 	res.Content = master
 	res.Send(w)
 }
 
+// Creates a new master object and stores it into the database.
 func (mc MasterController) CreateMaster(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	res := models.JsonResponse{}
 	decoder := json.NewDecoder(r.Body)
 
+	// Read the master object from the JSON body.
 	var m models.Master
 	err := decoder.Decode(&m)
 
@@ -94,6 +105,7 @@ func (mc MasterController) CreateMaster(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 
+	// Store the master object into the database.
 	_, err = mc.Db.Query(
 		"INSERT INTO masters (name, host, port) VALUES (?, ?, ?)",
 		m.Name, m.Host, m.Port,
@@ -106,15 +118,18 @@ func (mc MasterController) CreateMaster(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 
+	// Everything went fine.
 	res.Code = 200
 	res.Content = "Success"
 	res.Send(w)
 }
 
+// Updates a master object stored in the database.
 func (mc MasterController) UpdateMaster(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	res := models.JsonResponse{}
 	decoder := json.NewDecoder(r.Body)
 
+	// Decode the master object from the JSON body.
 	var m models.Master
 	err := decoder.Decode(&m)
 
@@ -125,6 +140,7 @@ func (mc MasterController) UpdateMaster(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 
+	// Update the master object inside the database using the decoded object.
 	_, err = mc.Db.Query(
 		"UPDATE masters SET name = ?, host = ?, port = ? WHERE id = ?",
 		m.Name, m.Host, m.Port, p.ByName("id"),
@@ -137,14 +153,17 @@ func (mc MasterController) UpdateMaster(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 
+	// Everything went fine.
 	res.Code = 200
 	res.Content = "Success"
 	res.Send(w)
 }
 
+// Deletes a master from the database.
 func (mc MasterController) DeleteMaster(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	res := models.JsonResponse{}
 
+	// Remove the master object from the database using the id.
 	_, err := mc.Db.Query(
 		"DELETE FROM masters WHERE id = ?",
 		p.ByName("id"),
@@ -157,6 +176,7 @@ func (mc MasterController) DeleteMaster(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 
+	// Everything went fine.
 	res.Code = 200
 	res.Content = "Success"
 	res.Send(w)
