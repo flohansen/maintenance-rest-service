@@ -7,9 +7,9 @@ service. Used technologies are [MySQL](https://mysql.com/) and
 [Go](https://golang.org).
 
 ## Table of contents
-* [Installation](https://github.com/Kluddizz/maintenance-rest-service#installation)
-  - [Create database configuration file](https://github.com/Kluddizz/maintenance-rest-service#create-database-configuration-file)
-  - [Generate new RSA key pair](https://github.com/Kluddizz/maintenance-rest-service#generate-new-rsa-key-pair)
+* [Installation](#installation)
+  - [Create database configuration file](#create-database-configuration-file)
+  - [Generate new RSA key pair](#generate-new-rsa-key-pair)
 
 ## Installation
 ### Create database configuration file
