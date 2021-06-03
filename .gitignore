@@ -1,5 +1,6 @@
 # Configurations
 database.json
+*.key
 
 # Binaries for programs and plugins
 *.exe

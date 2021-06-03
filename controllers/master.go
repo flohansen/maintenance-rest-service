@@ -25,7 +25,7 @@ func NewMasterController(db *sql.DB) *MasterController {
 
 // Requests all masters stored in the database.
 func (mc MasterController) GetMasters(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	res := models.JsonResponse{}
+	res := models.NewJsonResponse(w)
 	var masters []models.Master
 
 	// Send the select query to the database to fetch stored master endpoints.
@@ -35,7 +35,7 @@ func (mc MasterController) GetMasters(w http.ResponseWriter, r *http.Request, p 
 	if err != nil {
 		res.Code = 400
 		res.Content = "Could not find masters"
-		res.Send(w)
+		res.Send()
 		return
 	}
 
@@ -48,7 +48,7 @@ func (mc MasterController) GetMasters(w http.ResponseWriter, r *http.Request, p 
 		if err != nil {
 			res.Code = 400
 			res.Content = "Internal error"
-			res.Send(w)
+			res.Send()
 			return
 		}
 
@@ -59,12 +59,12 @@ func (mc MasterController) GetMasters(w http.ResponseWriter, r *http.Request, p 
 	// Everything was successfull.
 	res.Code = 200
 	res.Content = masters
-	res.Send(w)
+	res.Send()
 }
 
 // Requests a specific master identified by an id.
 func (mc MasterController) GetMaster(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	res := models.JsonResponse{}
+	res := models.NewJsonResponse(w)
 	master := models.Master{}
 
 	// Request the master endpoint using the given id from the database.
@@ -78,19 +78,19 @@ func (mc MasterController) GetMaster(w http.ResponseWriter, r *http.Request, p h
 	if err != nil {
 		res.Code = 400
 		res.Content = fmt.Sprintf("Could not find master with id `%s`", p.ByName("id"))
-		res.Send(w)
+		res.Send()
 		return
 	}
 
 	// Everything went fine.
 	res.Code = 200
 	res.Content = master
-	res.Send(w)
+	res.Send()
 }
 
 // Creates a new master object and stores it into the database.
 func (mc MasterController) CreateMaster(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	res := models.JsonResponse{}
+	res := models.NewJsonResponse(w)
 	decoder := json.NewDecoder(r.Body)
 
 	// Read the master object from the JSON body.
@@ -100,7 +100,7 @@ func (mc MasterController) CreateMaster(w http.ResponseWriter, r *http.Request, 
 	if err != nil {
 		res.Code = 400
 		res.Content = "Could not parse json body"
-		res.Send(w)
+		res.Send()
 		return
 	}
 
@@ -113,19 +113,19 @@ func (mc MasterController) CreateMaster(w http.ResponseWriter, r *http.Request, 
 	if err != nil {
 		res.Code = 400
 		res.Content = "Could not create new master. Please check if the name is unique."
-		res.Send(w)
+		res.Send()
 		return
 	}
 
 	// Everything went fine.
 	res.Code = 200
 	res.Content = "Success"
-	res.Send(w)
+	res.Send()
 }
 
 // Updates a master object stored in the database.
 func (mc MasterController) UpdateMaster(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	res := models.JsonResponse{}
+	res := models.NewJsonResponse(w)
 	decoder := json.NewDecoder(r.Body)
 
 	// Decode the master object from the JSON body.
@@ -135,7 +135,7 @@ func (mc MasterController) UpdateMaster(w http.ResponseWriter, r *http.Request, 
 	if err != nil {
 		res.Code = 400
 		res.Content = "Could not parse json body"
-		res.Send(w)
+		res.Send()
 		return
 	}
 
@@ -148,19 +148,19 @@ func (mc MasterController) UpdateMaster(w http.ResponseWriter, r *http.Request, 
 	if err != nil {
 		res.Code = 400
 		res.Content = "Could not update master"
-		res.Send(w)
+		res.Send()
 		return
 	}
 
 	// Everything went fine.
 	res.Code = 200
 	res.Content = "Success"
-	res.Send(w)
+	res.Send()
 }
 
 // Deletes a master from the database.
 func (mc MasterController) DeleteMaster(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	res := models.JsonResponse{}
+	res := models.NewJsonResponse(w)
 
 	// Remove the master object from the database using the id.
 	_, err := mc.Db.Query(
@@ -171,12 +171,12 @@ func (mc MasterController) DeleteMaster(w http.ResponseWriter, r *http.Request, 
 	if err != nil {
 		res.Code = 400
 		res.Content = fmt.Sprintf("Could not delete master with id `%s`", p.ByName("id"))
-		res.Send(w)
+		res.Send()
 		return
 	}
 
 	// Everything went fine.
 	res.Code = 200
 	res.Content = "Success"
-	res.Send(w)
+	res.Send()
 }

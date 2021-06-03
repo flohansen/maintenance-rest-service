@@ -8,14 +8,21 @@ import (
 
 type (
 	JsonResponse struct {
-		Code    int         `json:"code"`
-		Content interface{} `json:"content"`
+		Response http.ResponseWriter `json:"-"`
+		Code     int                 `json:"code"`
+		Content  interface{}         `json:"content"`
 	}
 )
 
-func (r *JsonResponse) Send(w http.ResponseWriter) {
+func NewJsonResponse(w http.ResponseWriter) *JsonResponse {
+	return &JsonResponse{
+		Response: w,
+	}
+}
+
+func (r *JsonResponse) Send() {
 	rj, _ := json.Marshal(r)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(r.Code)
-	fmt.Fprintf(w, "%s", rj)
+	r.Response.Header().Set("Content-Type", "application/json")
+	r.Response.WriteHeader(r.Code)
+	fmt.Fprintf(r.Response, "%s", rj)
 }
