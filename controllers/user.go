@@ -4,12 +4,14 @@ import (
 	"database/sql"
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/julienschmidt/httprouter"
 	"github.com/kluddizz/maintenance-rest-service/models"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type (
@@ -41,13 +43,27 @@ func (uc UserController) CreateUser(w http.ResponseWriter, r *http.Request, p ht
 		return
 	}
 
+	// Hash the password using bcrypt
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+
+	if err != nil {
+		log.Println(err.Error())
+
+		res.Code = 400
+		res.Content = "Internal error"
+		res.Send()
+		return
+	}
+
 	// Insert the user into the database
 	_, err = uc.Db.Query(
 		"INSERT INTO users (username, password, firstName, lastName, email) VALUES (?, ?, ?, ?, ?)",
-		user.UserName, user.Password, user.FirstName, user.LastName, user.Email,
+		user.UserName, hashedPassword, user.FirstName, user.LastName, user.Email,
 	)
 
 	if err != nil {
+		log.Println(err.Error())
+
 		res.Code = 400
 		res.Content = "Could not create new user"
 		res.Send()
