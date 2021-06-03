@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"net/http"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/julienschmidt/httprouter"
 	"github.com/kluddizz/maintenance-master/config"
 	"github.com/kluddizz/maintenance-master/controllers"
