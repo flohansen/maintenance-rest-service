@@ -29,7 +29,7 @@ func main() {
 	// Define the routes of the REST service.
 	r.POST("/register", uc.CreateUser)
 	r.POST("/login", uc.LoginUser)
-	r.DELETE("/users/:id", uc.DeleteUser)
+	r.DELETE("/users", uc.DeleteUser)
 
 	r.GET("/masters", mc.GetMasters)
 	r.POST("/masters", mc.CreateMaster)

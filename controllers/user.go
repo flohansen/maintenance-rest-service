@@ -100,15 +100,29 @@ func (uc UserController) LoginUser(w http.ResponseWriter, r *http.Request, p htt
 		return
 	}
 
+	var user models.UserDb
+
 	// Check if the user exists
 	err = uc.Db.QueryRow(
-		"SELECT * FROM users WHERE username = ? AND password = ?",
-		loginCredentials.UserName, loginCredentials.Password,
-	).Err()
+		"SELECT id, username, password, firstname, lastname, email FROM users WHERE username = ?",
+		loginCredentials.UserName,
+	).Scan(
+		&user.Id, &user.UserName, &user.Password, &user.FirstName, &user.LastName, &user.Email,
+	)
 
 	if err != nil {
 		res.Code = 400
-		res.Content = "Could not find user"
+		res.Content = "Wrong login credentials"
+		res.Send()
+		return
+	}
+
+	// Compare passwords
+	err = bcrypt.CompareHashAndPassword(user.Password, []byte(loginCredentials.Password))
+
+	if err != nil {
+		res.Code = 400
+		res.Content = "Wrong login credentials"
 		res.Send()
 		return
 	}
@@ -155,10 +169,37 @@ func (uc UserController) DeleteUser(w http.ResponseWriter, r *http.Request, p ht
 		return
 	}
 
+	var user models.UserDb
+
+	// Check if the user exists
+	err = uc.Db.QueryRow(
+		"SELECT id, username, password, firstname, lastname, email FROM users WHERE username = ?",
+		loginCredentials.UserName,
+	).Scan(
+		&user.Id, &user.UserName, &user.Password, &user.FirstName, &user.LastName, &user.Email,
+	)
+
+	if err != nil {
+		res.Code = 400
+		res.Content = "Wrong login credentials"
+		res.Send()
+		return
+	}
+
+	// Compare passwords
+	err = bcrypt.CompareHashAndPassword(user.Password, []byte(loginCredentials.Password))
+
+	if err != nil {
+		res.Code = 400
+		res.Content = "Wrong login credentials"
+		res.Send()
+		return
+	}
+
 	// Remove user from database
 	_, err = uc.Db.Query(
-		"DELETE FROM users WHERE username = ? AND password = ?",
-		loginCredentials.UserName, loginCredentials.Password,
+		"DELETE FROM users WHERE id = ?",
+		user.Id,
 	)
 
 	if err != nil {
