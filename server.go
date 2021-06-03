@@ -23,11 +23,13 @@ func main() {
 
 	// Create new router and controllers for handling routing.
 	r := httprouter.New()
-	uc := controllers.NewUserController()
+	uc := controllers.NewUserController(db)
 	mc := controllers.NewMasterController(db)
 
 	// Define the routes of the REST service.
-	r.GET("/user/:id", uc.GetUser)
+	r.POST("/register", uc.CreateUser)
+	r.POST("/login", uc.LoginUser)
+	r.DELETE("/user/:id", uc.DeleteUser)
 
 	r.GET("/masters", mc.GetMasters)
 	r.POST("/masters", mc.CreateMaster)

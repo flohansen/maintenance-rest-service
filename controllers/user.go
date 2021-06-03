@@ -2,12 +2,9 @@ package controllers
 
 import (
 	"database/sql"
-	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/kluddizz/maintenance-rest-service/models"
 )
 
 type (
@@ -16,22 +13,24 @@ type (
 	}
 )
 
+// Creates a new instance of the user controller structure.
 func NewUserController(db *sql.DB) *UserController {
 	return &UserController{
 		Db: db,
 	}
 }
 
-func (uc UserController) GetUser(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	u := models.User{
-		Id:        p.ByName("id"),
-		FirstName: "Florian",
-		LastName:  "Hansen",
-	}
+// Creates a new user and add it to the database.
+func (uc UserController) CreateUser(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 
-	uj, _ := json.Marshal(u)
+}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-	fmt.Fprintf(w, "%s", uj)
+// Tries to login an user using the given login credentials and send a token if succeeded.
+func (uc UserController) LoginUser(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+
+}
+
+// Deletes an user and removes it from the database.
+func (uc UserController) DeleteUser(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+
 }
