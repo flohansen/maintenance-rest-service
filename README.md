@@ -1,4 +1,4 @@
-# Maintenance Master: Main program of the maintenance master node
+# Maintenance Rest Service
 Attention! This version is not safe and definitely not production ready! Please
 wait for a decent release.
 
