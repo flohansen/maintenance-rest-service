@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/kluddizz/maintenance-master/models"
+	"github.com/kluddizz/maintenance-rest-service/models"
 )
 
 type (

@@ -1,4 +1,4 @@
-module github.com/kluddizz/maintenance-master
+module github.com/kluddizz/maintenance-rest-service
 
 go 1.16
 
