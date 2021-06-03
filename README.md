@@ -22,3 +22,25 @@ by changing the relating values.
   "port": 3306
 }
 ```
+
+### Generate new RSA key pair
+Next you need to create an RSA256 key pair, which will be used to sign and
+verify json web tokens. To create a key pair, enter the following command in the
+terminal.
+
+```sh
+ssh-keygen -t rsa -b 4096 -m PEM -f private.key
+```
+
+This will generate a new private key in PEM format and a public key. The next
+step is to rewrite the public key in PEM format.
+
+```
+openssl rsa -in private.key -pubout -outform PEM -out private.key.pub
+```
+
+The last step is to rename the public key file.
+
+```
+mv private.key.pub public.key
+```
