@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -10,18 +11,22 @@ import (
 )
 
 type (
-	UserController struct{}
+	UserController struct {
+		Db *sql.DB
+	}
 )
 
-func NewUserController() *UserController {
-	return &UserController{}
+func NewUserController(db *sql.DB) *UserController {
+	return &UserController{
+		Db: db,
+	}
 }
 
 func (uc UserController) GetUser(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	u := models.User{
+		Id:        p.ByName("id"),
 		FirstName: "Florian",
 		LastName:  "Hansen",
-		Id:        p.ByName("id"),
 	}
 
 	uj, _ := json.Marshal(u)
