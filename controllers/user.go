@@ -18,6 +18,16 @@ type (
 	UserController struct {
 		Db *sql.DB
 	}
+
+	LoginCredentials struct {
+		UserName string `json:"username"`
+		Password string `json:"password"`
+	}
+
+	CustomClaims struct {
+		UserName string `json:"username"`
+		jwt.StandardClaims
+	}
 )
 
 // Creates a new instance of the user controller structure.
