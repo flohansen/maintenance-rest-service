@@ -133,6 +133,31 @@ func TestDeleteMaster(t *testing.T) {
   defer res.Body.Close()
 }
 
+func TestDeleteMasterFail(t *testing.T) {
+  req, err := http.NewRequest(
+    "DELETE",
+    fmt.Sprintf("http://localhost:3000/masters/%d", -1),
+    nil,
+  )
+
+  if err != nil {
+    t.Fatal(err.Error())
+  }
+
+  client := &http.Client{}
+  res, err := client.Do(req)
+
+  if err != nil {
+    t.Fatal(err.Error())
+  }
+
+  if res.StatusCode != 400 {
+    t.Errorf("Expected status code to be %d but received %d", 400, res.StatusCode)
+  }
+
+  defer res.Body.Close()
+}
+
 func TestUpdateMaster(t *testing.T) {
 }
 
