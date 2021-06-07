@@ -124,10 +124,24 @@ func TestDeleteMaster(t *testing.T) {
     t.Fatal(err.Error())
   }
 
+  var masterExists bool
+  err = db.QueryRow(
+    "SELECT EXISTS(SELECT 1 FROM masters WHERE id = ?)",
+    insertedId,
+  ).Scan(&masterExists)
+
+  if err != nil {
+    t.Fatal(err.Error())
+  }
+
   db.Query("DELETE FROM masters")
 
   if res.StatusCode != 200 {
     t.Errorf("Expected status code to be %d but received %d", 200, res.StatusCode)
+  }
+
+  if masterExists {
+    t.Errorf("Expected master existance to be %t but received %t", false, masterExists)
   }
 
   defer res.Body.Close()
