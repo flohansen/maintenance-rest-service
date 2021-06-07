@@ -5,32 +5,54 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
+	"os"
 	"testing"
 
-  _ "github.com/go-sql-driver/mysql"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/kluddizz/maintenance-rest-service/config"
 	"github.com/kluddizz/maintenance-rest-service/models"
 )
 
-func TestCreateMaster(t *testing.T) {
+var master = models.Master{
+  Name: "Test Master",
+  Host: "127.0.0.1",
+  Port: 5050,
+}
+
+var db *sql.DB
+
+func TestMain(m *testing.M) {
+  BeforeAll()
+  code := m.Run()
+  AfterAll()
+  os.Exit(code)
+}
+
+func BeforeAll() {
   dbConfig, err := config.ReadDatabaseConfig("../database.json")
 
   if err != nil {
-    t.Fatal("Cannot open database config")
+    panic(err.Error())
   }
 
-  db, err := sql.Open("mysql", dbConfig.DataSourceName())
+  db, err = sql.Open("mysql", dbConfig.DataSourceName())
 
   if err != nil {
-    t.Fatalf("Cannot open database connection: %s", err.Error())
+    panic(err.Error())
+  }
+}
+
+func AfterAll() {
+  _, err := db.Query("DELETE FROM masters")
+
+  if err != nil {
+    panic(err.Error())
   }
 
-  master := models.Master{
-    Name: "Test Master",
-    Host: "127.0.0.1",
-    Port: 5050,
-  }
+  db.Close()
+}
 
+func TestCreateMaster(t *testing.T) {
   jsonStr, err := json.Marshal(master)
   if err != nil {
     t.Fatal("Json marshalling failed")
@@ -38,6 +60,10 @@ func TestCreateMaster(t *testing.T) {
 
   req, err := http.NewRequest("POST", "http://localhost:3000/masters", bytes.NewBuffer([]byte(jsonStr)))
   req.Header.Set("Content-Type", "application/json")
+
+  if err != nil {
+    t.Fatal(err.Error())
+  }
 
   client := &http.Client{}
   res, err := client.Do(req)
