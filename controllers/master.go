@@ -165,12 +165,14 @@ func (mc MasterController) DeleteMaster(w http.ResponseWriter, r *http.Request, 
 	res := models.NewJsonResponse(w)
 
 	// Remove the master object from the database using the id.
-	_, err := mc.Db.Query(
+  queryRes, err := mc.Db.Exec(
 		"DELETE FROM masters WHERE id = ?",
 		p.ByName("id"),
 	)
 
-	if err != nil {
+  n, _ := queryRes.RowsAffected()
+
+	if err != nil || n == 0 {
 		res.Code = 400
 		res.Content = fmt.Sprintf("Could not delete master with id `%s`", p.ByName("id"))
 		res.Send()

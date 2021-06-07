@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"testing"
@@ -43,12 +44,7 @@ func BeforeAll() {
 }
 
 func AfterAll() {
-  _, err := db.Query("DELETE FROM masters")
-
-  if err != nil {
-    panic(err.Error())
-  }
-
+  db.Query("DELETE FROM masters")
   db.Close()
 }
 
@@ -86,10 +82,62 @@ func TestCreateMaster(t *testing.T) {
     t.Fatalf("Error in the query: %s", err.Error())
   }
 
+  db.Query("DELETE FROM masters")
+
+  if res.StatusCode != 200 {
+    t.Errorf("Expected status code to be %d but received %d", 200, res.StatusCode)
+  }
+
   if masterDb.Name != master.Name ||
      masterDb.Host != master.Host ||
      masterDb.Port != master.Port {
     t.Errorf("Masters are not equal. Got %+v; want %+v", masterDb, master)
   }
+}
 
+func TestDeleteMaster(t *testing.T) {
+  queryRes, err := db.Exec(
+    "INSERT INTO masters (id, name, host, port) VALUES (?, ?, ?, ?)",
+    0, master.Name, master.Host, master.Port,
+  )
+
+  if err != nil {
+    t.Fatalf("Could not insert test master: %s", err.Error())
+  }
+
+  insertedId, _ := queryRes.LastInsertId()
+
+  req, err := http.NewRequest(
+    "DELETE",
+    fmt.Sprintf("http://localhost:3000/masters/%d", insertedId),
+    nil,
+  )
+
+  if err != nil {
+    t.Fatal(err.Error())
+  }
+
+  client := &http.Client{}
+  res, err := client.Do(req)
+
+  if err != nil {
+    t.Fatal(err.Error())
+  }
+
+  db.Query("DELETE FROM masters")
+
+  if res.StatusCode != 200 {
+    t.Errorf("Expected status code to be %d but received %d", 200, res.StatusCode)
+  }
+
+  defer res.Body.Close()
+}
+
+func TestUpdateMaster(t *testing.T) {
+}
+
+func TestGetMasters(t *testing.T) {
+}
+
+func TestGetSingleMaster(t *testing.T) {
 }
