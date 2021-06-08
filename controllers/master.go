@@ -142,12 +142,14 @@ func (mc MasterController) UpdateMaster(w http.ResponseWriter, r *http.Request, 
 	}
 
 	// Update the master object inside the database using the decoded object.
-	_, err = mc.Db.Query(
+  queryRes, err := mc.Db.Exec(
 		"UPDATE masters SET name = ?, host = ?, port = ? WHERE id = ?",
 		m.Name, m.Host, m.Port, p.ByName("id"),
 	)
 
-	if err != nil {
+  affectedRows, _ := queryRes.RowsAffected()
+
+	if err != nil || affectedRows == 0 {
 		res.Code = 400
 		res.Content = "Could not update master"
 		res.Send()
