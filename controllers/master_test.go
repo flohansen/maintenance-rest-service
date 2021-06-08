@@ -405,6 +405,7 @@ func TestGetMasters(t *testing.T) {
   }
 }
 
+// Test if we can fetch masters by id.
 func TestGetSingleMaster(t *testing.T) {
   // Insert one master into the database.
   queryRes, _ := db.Exec(
@@ -456,6 +457,28 @@ func TestGetSingleMaster(t *testing.T) {
   }
 }
 
+// Test if we cannot fetch masters by invalid ids.
 func TestGetSingleMasterFail(t *testing.T) {
+  // Create new GET request.
+  req, _ := http.NewRequest(
+    "GET",
+    fmt.Sprintf("http://localhost:3000/masters/%d", -1),
+    nil,
+  )
+
+  // Send request.
+  client := &http.Client{}
+  res, err := client.Do(req)
+
+  if err != nil {
+    t.Fatalf("Cannot send request: %s", err.Error())
+  }
+
+  defer res.Body.Close()
+
+  // Check status code.
+  if res.StatusCode != 400 {
+    t.Errorf("Expected status code to be %d but received %d", 400, res.StatusCode)
+  }
 }
 
