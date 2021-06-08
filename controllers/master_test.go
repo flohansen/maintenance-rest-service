@@ -204,6 +204,75 @@ func TestDeleteMasterFail(t *testing.T) {
 }
 
 func TestUpdateMaster(t *testing.T) {
+  // Insert a new master directly into the dabase.
+  queryRes, err := db.Exec(
+    "INSERT INTO masters (name, host, port) VALUES (?, ?, ?)",
+    master.Name, master.Host, master.Port,
+  )
+
+  if err != nil {
+    t.Fatalf("Could not insert test master: %s", err.Error())
+  }
+
+  updatedMaster := master
+  updatedMaster.Name = "Updated Master"
+
+  jsonBody, err := json.Marshal(updatedMaster)
+
+  if err != nil {
+    t.Fatalf("Could not parse json: %s", err.Error())
+  }
+
+  // Read out the created id for the master.
+  insertedId, _ := queryRes.LastInsertId()
+
+  // Prepare the PUT request on /masters/:id
+  req, err := http.NewRequest(
+    "PUT",
+    fmt.Sprintf("http://localhost:3000/masters/%d", insertedId),
+    bytes.NewBuffer(jsonBody),
+  )
+
+  if err != nil {
+    t.Fatal(err.Error())
+  }
+
+  // Send the request
+  client := &http.Client{}
+  res, err := client.Do(req)
+
+  if err != nil {
+    t.Fatal(err.Error())
+  }
+
+  defer res.Body.Close()
+
+  // Read the updated master from the database.
+  var updatedMasterDb models.Master
+  err = db.QueryRow(
+    "SELECT id, name, host, port FROM masters WHERE id = ?",
+    insertedId,
+  ).Scan(
+    &updatedMasterDb.Id, &updatedMasterDb.Name, &updatedMasterDb.Host, &updatedMasterDb.Port,
+  )
+
+  if err != nil {
+    t.Fatalf("Error while selecting updated master: %s", err.Error())
+  }
+
+  // Cleanup the database.
+  db.Query("DELETE FROM masters")
+
+  // Check the expected status code.
+  if res.StatusCode != 200 {
+    t.Errorf("Expected status code to be %d but received %d", 200, res.StatusCode)
+  }
+
+  if updatedMasterDb.Name != updatedMaster.Name ||
+     updatedMasterDb.Host != master.Host ||
+     updatedMasterDb.Port != master.Port {
+    t.Errorf("Expected updated master to be %v but received %v", updatedMaster, updatedMasterDb)
+  }
 }
 
 func TestGetMasters(t *testing.T) {
