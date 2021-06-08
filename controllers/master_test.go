@@ -12,6 +12,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/kluddizz/maintenance-rest-service/config"
 	"github.com/kluddizz/maintenance-rest-service/models"
+	"github.com/kluddizz/maintenance-rest-service/utils"
 )
 
 var master = models.Master{
@@ -405,4 +406,56 @@ func TestGetMasters(t *testing.T) {
 }
 
 func TestGetSingleMaster(t *testing.T) {
+  // Insert one master into the database.
+  queryRes, _ := db.Exec(
+    "INSERT INTO masters (name, host, port) VALUES (?, ?, ?)",
+    master.Name, master.Host, master.Port,
+  )
+
+  // Get the auto generated master id.
+  insertedId, _ := queryRes.LastInsertId()
+
+  // Create new GET request.
+  req, _ := http.NewRequest(
+    "GET",
+    fmt.Sprintf("http://localhost:3000/masters/%d", insertedId),
+    nil,
+  )
+
+  // Send request.
+  client := &http.Client{}
+  res, err := client.Do(req)
+
+  if err != nil {
+    t.Fatalf("Cannot send request: %s", err.Error())
+  }
+
+  defer res.Body.Close()
+
+  // Parse the response.
+  var response models.JsonResponse
+  decoder := json.NewDecoder(res.Body)
+  decoder.Decode(&response)
+
+  var masterResponse models.Master
+  utils.MapToStruct(response.Content, &masterResponse)
+
+  // Cleanup database.
+  db.Exec("DELETE FROM masters")
+
+  // Check status code.
+  if res.StatusCode != 200 {
+    t.Errorf("Expected status code to be %d but received %d", 200, res.StatusCode)
+  }
+
+  // Check fetched master.
+  if masterResponse.Host != master.Host ||
+     masterResponse.Name != master.Name ||
+     masterResponse.Port != master.Port {
+    t.Errorf("Expected master to be %v but received %v", master, masterResponse)
+  }
 }
+
+func TestGetSingleMasterFail(t *testing.T) {
+}
+
