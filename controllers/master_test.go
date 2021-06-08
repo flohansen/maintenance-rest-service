@@ -347,7 +347,61 @@ func TestUpdateMasterFail(t *testing.T) {
   }
 }
 
+// Test if we get all the masters stored in the database.
 func TestGetMasters(t *testing.T) {
+  numberMasters := 5
+
+  // Insert some masters into the database.
+  for i := 0; i < numberMasters; i++ {
+    db.Exec(
+      "INSERT INTO masters (name, host, port) VALUES (?, ?, ?)",
+      fmt.Sprintf("Test Master %d", i), master.Host, master.Port,
+    )
+  }
+
+  // Prepare request.
+  req, err := http.NewRequest(
+    "GET",
+    "http://localhost:3000/masters",
+    nil,
+  )
+
+  if err != nil {
+    t.Fatalf("Cannot create HTTP request: %s", err.Error())
+  }
+
+  // Send request.
+  client := &http.Client{}
+  res, err := client.Do(req)
+
+  if err != nil {
+    t.Fatalf("Error while sending request: %s", err.Error())
+  }
+
+  defer res.Body.Close()
+  
+  // Parse response.
+  var response models.JsonResponse
+  decoder := json.NewDecoder(res.Body)
+  err = decoder.Decode(&response)
+
+  if err != nil {
+    t.Fatalf("Could not parse json: %s", err.Error())
+  }
+
+  // Cleanup database.
+  db.Exec("DELETE FROM masters")
+
+  // Check if request was successful.
+  if res.StatusCode != 200 {
+    t.Errorf("Expected status code to be %d but received %d", 200, res.StatusCode)
+  }
+
+  // Check if the amount of fetched masters.
+  masters := response.Content.([]interface{})
+  if len(masters) != numberMasters {
+    t.Errorf("Expected number of masters to be %d but received %d", numberMasters, len(masters))
+  }
 }
 
 func TestGetSingleMaster(t *testing.T) {
