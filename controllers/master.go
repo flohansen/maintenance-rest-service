@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -99,7 +98,6 @@ func (mc MasterController) CreateMaster(w http.ResponseWriter, r *http.Request, 
 	err := decoder.Decode(&m)
 
 	if err != nil {
-    log.Printf("Could not decode json string: %s\n", err.Error())
 		res.Code = 400
 		res.Content = "Could not parse json body"
 		res.Send()

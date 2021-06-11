@@ -1,6 +1,10 @@
 package models
 
-import "github.com/dgrijalva/jwt-go"
+import (
+	"database/sql"
+
+	"github.com/dgrijalva/jwt-go"
+)
 
 type (
 	User struct {
@@ -16,9 +20,9 @@ type (
 		Id        int
 		UserName  string
 		Password  []byte
-		FirstName string
-		LastName  string
-		Email     string
+		FirstName sql.NullString
+		LastName  sql.NullString
+		Email     sql.NullString
 	}
 
 	LoginCredentials struct {

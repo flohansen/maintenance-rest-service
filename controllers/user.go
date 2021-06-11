@@ -95,7 +95,7 @@ func (uc UserController) LoginUser(w http.ResponseWriter, r *http.Request, p htt
 
 	if err != nil {
 		res.Code = 400
-		res.Content = "Internal error"
+		res.Content = "Error while decoding json body"
 		res.Send()
 		return
 	}
@@ -111,8 +111,10 @@ func (uc UserController) LoginUser(w http.ResponseWriter, r *http.Request, p htt
 	)
 
 	if err != nil {
+    log.Printf("Error while selecting user: %s", err.Error())
+
 		res.Code = 400
-		res.Content = "Wrong login credentials"
+		res.Content = "Internal error"
 		res.Send()
 		return
 	}

@@ -8,6 +8,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/kluddizz/maintenance-rest-service/config"
 	"github.com/kluddizz/maintenance-rest-service/controllers"
+	"github.com/kluddizz/maintenance-rest-service/middlewares"
 )
 
 func main() {
@@ -29,14 +30,14 @@ func main() {
 	// Define the routes of the REST service.
 	r.POST("/register", uc.CreateUser)
 	r.POST("/login", uc.LoginUser)
-	r.DELETE("/users", uc.DeleteUser)
+	r.DELETE("/users", middlewares.AuthMiddleWare(uc.DeleteUser))
 
-	r.GET("/masters", mc.GetMasters)
-	r.POST("/masters", mc.CreateMaster)
+	r.GET("/masters", middlewares.AuthMiddleWare(mc.GetMasters))
+	r.POST("/masters", middlewares.AuthMiddleWare(mc.CreateMaster))
 
-	r.GET("/masters/:id", mc.GetMaster)
-	r.PUT("/masters/:id", mc.UpdateMaster)
-	r.DELETE("/masters/:id", mc.DeleteMaster)
+	r.GET("/masters/:id", middlewares.AuthMiddleWare(mc.GetMaster))
+	r.PUT("/masters/:id", middlewares.AuthMiddleWare(mc.UpdateMaster))
+	r.DELETE("/masters/:id", middlewares.AuthMiddleWare(mc.DeleteMaster))
 
 	// Start listening to clients.
 	http.ListenAndServe("localhost:3000", r)

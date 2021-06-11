@@ -13,7 +13,13 @@ import (
 	"github.com/kluddizz/maintenance-rest-service/config"
 	"github.com/kluddizz/maintenance-rest-service/models"
 	"github.com/kluddizz/maintenance-rest-service/utils"
+	"golang.org/x/crypto/bcrypt"
 )
+
+var user = models.User{
+  UserName: "testuser",
+  Password: "testuserpw",
+}
 
 var master = models.Master{
   Name: "Test Master",
@@ -22,6 +28,7 @@ var master = models.Master{
 }
 
 var db *sql.DB
+var token string
 
 func TestMain(m *testing.M) {
   BeforeAll()
@@ -46,12 +53,26 @@ func BeforeAll() {
   }
 
   // Make sure the database is clean before starting tests.
-  db.Query("DELETE FROM masters")
+  db.Exec("DELETE FROM masters")
+  db.Exec("DELETE FROM users")
+
+  // Insert the test user to be able to generate valid tokens.
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+  db.Exec("INSERT INTO users (username, password) VALUES (?, ?)", user.UserName, hashedPassword)
+
+  // Receive token for user.
+  jsonBody, _ := json.Marshal(models.LoginCredentials{UserName: user.UserName, Password: user.Password})
+  resp, _ := http.DefaultClient.Post("http://localhost:3000/login", "application/json", bytes.NewBuffer(jsonBody))
+
+  var response models.JsonResponse
+  json.NewDecoder(resp.Body).Decode(&response)
+  token = response.Content.(string)
 }
 
 func AfterAll() {
   // Remove all generated masters from the database.
-  db.Query("DELETE FROM masters")
+  db.Exec("DELETE FROM masters")
+  db.Exec("DELETE FROM users")
 
   // Close the database connection.
   db.Close()
@@ -74,6 +95,7 @@ func TestCreateMaster(t *testing.T) {
   }
 
   // Send the request
+  req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
   client := &http.Client{}
   res, err := client.Do(req)
 
@@ -140,6 +162,7 @@ func TestDeleteMaster(t *testing.T) {
   }
 
   // Send the request
+  req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
   client := &http.Client{}
   res, err := client.Do(req)
 
@@ -189,6 +212,7 @@ func TestDeleteMasterFail(t *testing.T) {
   }
 
   // Send the invalid request.
+  req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
   client := &http.Client{}
   res, err := client.Do(req)
 
@@ -239,6 +263,7 @@ func TestUpdateMaster(t *testing.T) {
   }
 
   // Send the request
+  req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
   client := &http.Client{}
   res, err := client.Do(req)
 
@@ -311,6 +336,7 @@ func TestUpdateMasterFail(t *testing.T) {
   }
 
   // Send the request
+  req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
   client := &http.Client{}
   res, err := client.Do(req)
 
@@ -372,6 +398,7 @@ func TestGetMasters(t *testing.T) {
   }
 
   // Send request.
+  req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
   client := &http.Client{}
   res, err := client.Do(req)
 
@@ -395,7 +422,7 @@ func TestGetMasters(t *testing.T) {
 
   // Check if request was successful.
   if res.StatusCode != 200 {
-    t.Errorf("Expected status code to be %d but received %d", 200, res.StatusCode)
+    t.Fatalf("Expected status code to be %d but received %d", 200, res.StatusCode)
   }
 
   // Check if the amount of fetched masters.
@@ -424,6 +451,7 @@ func TestGetSingleMaster(t *testing.T) {
   )
 
   // Send request.
+  req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
   client := &http.Client{}
   res, err := client.Do(req)
 
@@ -467,6 +495,7 @@ func TestGetSingleMasterFail(t *testing.T) {
   )
 
   // Send request.
+  req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
   client := &http.Client{}
   res, err := client.Do(req)
 
