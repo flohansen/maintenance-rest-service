@@ -50,15 +50,15 @@ The last step is to rename the public key file.
 mv private.key.pub public.key
 ```
 
-### Routes
-**User Endpoint**
-`POST` `/register` Creates a new user
-`POST` `/login` Tries to login an existing user and returns an authentication token
-`DELETE` `/users` Deletes an user
+## Routes
+### User Endpoint
+* `POST` `/register` Creates a new user
+* `POST` `/login` Tries to login an existing user and returns an authentication token
+* `DELETE` `/users` Deletes an user
 
-**Master Endpoint**
-`GET` `/masters` Returns all masters
-`POST` `/masters` Creates a new master
-`GET` `/masters/:id` Returns an existing master with given ID
-`PUT` `/masters/:id` Updates an existing master with given ID
-`DELETE` `/masters/:id` Deletes an existing master with given ID
+### Master Endpoint
+* `GET` `/masters` Returns all masters
+* `POST` `/masters` Creates a new master
+* `GET` `/masters/:id` Returns an existing master with given ID
+* `PUT` `/masters/:id` Updates an existing master with given ID
+* `DELETE` `/masters/:id` Deletes an existing master with given ID
