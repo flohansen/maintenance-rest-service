@@ -10,6 +10,9 @@ service. Used technologies are [MySQL](https://mysql.com/) and
 * [Installation](#installation)
   - [Create database configuration file](#create-database-configuration-file)
   - [Generate new RSA key pair](#generate-new-rsa-key-pair)
+* [Routes](#routes)
+  - [User Endpoint](#user-endpoint)
+  - [Master Endpoint](#master-endpoint)
 
 ## Installation
 ### Create database configuration file
